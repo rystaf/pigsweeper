@@ -1,0 +1,175 @@
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+    <title>PigSweeper</title>
+    <style>
+      body{
+        text-align:center;
+        white-space:nowrap;
+      }
+      #game {
+        width:100%;
+      }
+      #game div,#sty div{
+        display:inline-block;
+        vertical-align:top;
+      }
+      form {
+        margin-bottom: 0px;
+        margin-top:5px;
+      }
+      form input{
+        text-align:center;
+        width:25px
+      }
+      .player {
+        text-align:center;
+        border:1px solid;
+        width:200px;
+        height:100px;
+        margin:10px;
+        border-color:black;
+      }
+      .turn {
+        border-color:green;
+        border:5px solid green;
+        margin:6px;
+      }
+      #sty {
+        max-width:500px;
+        border:1px solid black;
+        padding:20px;
+        margin:10px;
+        white-space:normal;
+      }
+      .box {
+        width:100px;
+        text-align:center;
+        height:74;
+        border:1px solid black;
+        margin:10px;
+        background-color:gray;
+        background-repeat:no-repeat;
+        color:black;
+        cursor: pointer;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+      #turn {
+        font-size: 20px
+      }
+      #instructions {
+        width: 410px;
+        margin-left:auto;
+        margin-right:auto;
+        white-space:normal; 
+      }
+    </style>
+    <script>
+        var scores = [0,0];
+        var boxesOpened = 0;
+        var turn = 1;
+        var turnTotal = 0;
+        var checkBox = function(box){
+          boxesOpened += 1;
+          roll = [Math.floor((Math.random()*6)+1), Math.floor((Math.random()*6)+1)];
+          points = roll[0]+roll[1];
+          console.log(roll, points);
+          if (roll[0]==1 && roll[1]==1){
+            document.getElementById('hiss').play();
+            box.style.backgroundImage = 'url('+"snake.png"+')';
+            box.style.backgroundColor = 'white';
+            updateTurnTotal(0);
+            updateScore(turn, 0);
+            nextTurn();
+            checkForWin();
+          }
+          else if(roll[1]==1 || roll[0]==1){
+            document.getElementById('squeal').play();
+            box.style.backgroundImage = 'url('+"pig.jpg"+')';
+            updateTurnTotal(0);
+            nextTurn();
+            checkForWin();
+          }
+          else{
+            box.style.background = "white";
+            box.innerHTML = "<h2>"+points+"</h2>";
+            updateTurnTotal(turnTotal += points);
+          }
+          box.setAttribute ("onclick", null);
+          box.style.cursor="default";
+        }
+        var updateTurnTotal = function(value){
+          turnTotal = value;
+          document.getElementById("turnTotal").innerHTML = value;
+        }
+        var nextTurn = function(){
+          document.getElementById("p"+turn).className = "player";
+          if (turn == 1) turn = 2;
+          else turn = 1;
+          document.getElementById("p"+turn).className = "player turn";
+        }
+        var checkForWin = function(){
+          if (boxesOpened == boxes){
+            document.getElementById("p"+turn).className = "player";
+            if (scores[1] > scores[0]) alert("Player 2 Wins!");
+            else if (scores[1] < scores[0]) alert("Player 1 Wins!");
+            else alert("Tie Game!");
+          }
+        }
+        var updateScore = function(player, score){
+          document.getElementById("p"+player+"Score").innerHTML = score;
+          scores[player-1] = score; 
+        }
+        var bank = function(){
+          updateScore(turn, scores[turn-1]+turnTotal);
+          updateTurnTotal(0);
+          nextTurn();
+          checkForWin();
+        }
+    </script>
+  </head>
+  <body>
+    <audio id="squeal" src="squeal.wav" preload="auto"></audio>
+    <audio id="hiss" src="hiss.wav" preload="auto"></audio>
+    <h1>PigSweeper</h1>
+    <a href="#" onclick="location.reload()">Restart</a>
+    <form action="#">
+      Boxes: <input id="setBoxes" maxlength=2 name="boxes" type="text">
+      <input type="submit" style="display:none">
+    </form>
+    <div id="game">
+      <div id="p1" class="player turn">
+        <h2>Player 1</h2>
+        Score: <span id="p1Score">0</span>
+      </div>
+      <div id="sty"></div>
+      <div id="p2" class="player">
+        <h2>Player 2</h2>
+        Score: <span id="p2Score">0</span>
+      </div>
+    </div>
+    <div id="turn">
+      Turn Total: <span id="turnTotal">0</span><br><br>
+      <input type="button" value="Bank" onclick="bank()">
+    </div>
+    <div id="instructions">
+      <h2>Instructions</h2>
+      Click on the boxes to collect points. If you find a pig you lose all points for that turn. Click the bank button to save the points to your score. If you find a snake your score resets to 0. Player with the highest score once all the boxes are opened wins!
+    </div>
+  </body>
+  <script>
+    var boxes = window.location.search.substring(7) || 16;
+    document.getElementById("setBoxes").value = boxes;
+    for (i=0; i < boxes; i++){
+      var boxNode = document.createElement("div");
+      boxNode.className = "box";
+      boxNode.onclick = function(){checkBox(this)};
+      document.getElementById("sty").appendChild(boxNode);
+    }
+  </script>
+</html>
